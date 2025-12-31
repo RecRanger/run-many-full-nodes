@@ -1,0 +1,76 @@
+services:
+  bitcoind:
+    image: bitcoin-core:local
+    container_name: bitcoind
+    build:
+      context: ./bitcoin
+      dockerfile: Dockerfile
+      args:
+        UID: 1000
+        GID: 1000
+    restart: unless-stopped
+
+    environment:
+      UID: 1000
+      GID: 1000
+
+    volumes:
+      - bitcoin-data:/home/crypto_coin_user/.bitcoin
+
+    ports:
+      # Bitcoin P2P
+      - "8333:8333"
+      # Bitcoin RPC
+      - "8332:8332"
+
+    command:
+      - bitcoind
+      - -server=1
+      - -txindex=1
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+      - -rpcuser=bitcoinrpc
+      - -rpcpassword=change_me
+      - -printtoconsole
+
+
+  litecoind:
+    image: litecoin-core:local
+    container_name: litecoind
+    build:
+      context: ./litecoin
+      dockerfile: Dockerfile
+      args:
+        UID: 1000
+        GID: 1000
+    restart: unless-stopped
+
+    environment:
+      UID: 1000
+      GID: 1000
+
+    volumes:
+      - litecoin-data:/home/crypto_coin_user/.litecoin
+
+    ports:
+      # Litecoin P2P
+      - "9333:9333"
+      # Litecoin RPC
+      - "9332:9332"
+
+    command:
+      - litecoind
+      - -server=1
+      - -txindex=1
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+      - -rpcuser=litecoinrpc
+      - -rpcpassword=change_me
+      - -printtoconsole
+
+
+volumes:
+  bitcoin-data:
+    driver: local
+  litecoin-data:
+    driver: local
