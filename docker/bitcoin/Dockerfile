@@ -20,7 +20,7 @@ RUN apt-get update --yes \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ENV BITCOIN_PREFIX=/opt/bitcoin
+ENV CRYPTO_COIN_PREFIX=/opt/bitcoin
 ARG COMMIT=master
 
 WORKDIR /src
@@ -41,7 +41,7 @@ RUN set -ex \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_CXX_COMPILER=clang++-19 \
     -DCMAKE_C_COMPILER=clang-19 \
-    -DCMAKE_INSTALL_PREFIX:PATH="${BITCOIN_PREFIX}" \
+    -DCMAKE_INSTALL_PREFIX:PATH="${CRYPTO_COIN_PREFIX}" \
     -DWITH_CCACHE=ON \
   && cmake --build build -j$(nproc) \
   && strip build/bin/bitcoin-cli build/bin/bitcoin-tx build/bin/bitcoind \
@@ -53,10 +53,10 @@ FROM debian:trixie-slim
 ARG UID=101
 ARG GID=101
 
-ENV BITCOIN_DATA=/home/bitcoin/.bitcoin
+ENV CRYPTO_COIN_DATA=/home/crypto_coin_user/.bitcoin
 
-RUN groupadd --gid ${GID} bitcoin \
-  && useradd --create-home --no-log-init -u ${UID} -g ${GID} bitcoin \
+RUN groupadd --gid ${GID} crypto_coin_user \
+  && useradd --create-home --no-log-init -u ${UID} -g ${GID} crypto_coin_user \
   && apt-get update --yes \
   && apt-get install --yes --no-install-recommends \
     capnproto \
@@ -74,9 +74,9 @@ ENV PATH=/opt/bin:$PATH
 
 COPY docker-entrypoint.sh /entrypoint.sh
 
-VOLUME ["/home/bitcoin/.bitcoin"]
+VOLUME ["/home/crypto_coin_user/.bitcoin"]
 EXPOSE 8332 8333 18332 18333 18443 18444 38333 38332
 
 ENTRYPOINT ["/entrypoint.sh"]
-RUN bitcoind -version | grep "Bitcoin Core daemon version"
+RUN bitcoind -version | grep "daemon version"
 CMD ["bitcoind"]
