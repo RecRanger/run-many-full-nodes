@@ -3,10 +3,19 @@
 This is a companion to the BTCPay Server where each coin has a corresponding CLI script.
 """
 
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#   "loguru",
+# ]
+# ///
+
 import subprocess
 import json
 import datetime
 import sys
+
+from loguru import logger
 
 
 COINS = [
@@ -34,14 +43,14 @@ def run_cli(cmd: list[str]) -> dict:
             check=True,
         )
     except subprocess.CalledProcessError as e:
-        print(f"❌ Command failed: {' '.join(cmd)}", file=sys.stderr)
-        print(e.stderr.strip(), file=sys.stderr)
+        logger.error(f"❌ Command failed: {' '.join(cmd)}", file=sys.stderr)
+        logger.error(e.stderr.strip(), file=sys.stderr)
         raise
 
     try:
         return json.loads(result.stdout)
     except json.JSONDecodeError:
-        print(f"❌ Invalid JSON from: {' '.join(cmd)}", file=sys.stderr)
+        logger.error(f"❌ Invalid JSON from: {' '.join(cmd)}", file=sys.stderr)
         raise
 
 
@@ -52,11 +61,11 @@ def format_mediantime(ts: int | None) -> str:
 
 
 def main():
-    print(datetime.datetime.now().isoformat())
-    print()
+    logger.info(datetime.datetime.now().isoformat())
+    logger.info("")
 
     for coin in COINS:
-        print(f"==== {coin} ====")
+        logger.info(f"==== {coin} ====")
 
         cmd = [f"{coin}-cli.sh", "getblockchaininfo"]
         info = run_cli(cmd)
@@ -64,14 +73,14 @@ def main():
         blocks = info.get("blocks")
         mediantime = info.get("mediantime")
 
-        print(f"blocks:      {blocks}")
-        print(f"mediantime:  {mediantime}")
-        print(f"date:        {format_mediantime(mediantime)}")
-        print()
+        logger.info(f"blocks:      {blocks}")
+        logger.info(f"mediantime:  {mediantime}")
+        logger.info(f"date:        {format_mediantime(mediantime)}")
+        logger.info("")
 
-    print("Don't have a rule to scan monero yet.")
-    print()
-    print(datetime.datetime.now().isoformat())
+    logger.warning("No rule to scan monero yet.")
+    logger.info("")
+    logger.info(datetime.datetime.now().isoformat())
 
 
 if __name__ == "__main__":
